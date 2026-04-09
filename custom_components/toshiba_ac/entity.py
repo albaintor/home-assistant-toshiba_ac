@@ -6,7 +6,8 @@ import logging
 
 from .toshiba_ac.device import ToshibaAcDevice
 
-from homeassistant.helpers.entity import DeviceInfo, Entity
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import Entity
 
 from .const import DOMAIN
 
@@ -55,5 +56,7 @@ class ToshibaAcStateEntity(ToshibaAcEntity):
 
     def _state_changed(self, _device: ToshibaAcDevice) -> None:
         """Call when the Toshiba AC device state changes."""
+        if not self.hass or not self.enabled:
+            return
         self.update_attrs()
         self.async_write_ha_state()

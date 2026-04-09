@@ -132,13 +132,10 @@ _SELECT_DESCRIPTIONS: Sequence[ToshibaAcSelectDescription] = [
 ]
 
 
-# This function is called as part of the __init__.async_setup_entry (via the
-# hass.config_entries.async_forward_entry_setup call)
 async def async_setup_entry(hass, config_entry, async_add_devices):
-    """Add sensor for passed config_entry in HA."""
-    # The hub is loaded from the associated hass.data entry that was created in the
-    # __init__.async_setup_entry function
-    device_manager = hass.data[DOMAIN][config_entry.entry_id]
+    """Add select entities for passed config_entry in HA."""
+    entry_data = hass.data[DOMAIN][config_entry.entry_id]
+    device_manager = entry_data["device_manager"] if isinstance(entry_data, dict) else entry_data
     new_entities = []
 
     devices: list[ToshibaAcDevice] = await device_manager.get_devices()
@@ -147,14 +144,14 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
             if entity_description.is_supported(device.supported):
                 new_entities.append(ToshibaAcSelectEntity(device, entity_description))
             else:
-                _LOGGER.info(
+                _LOGGER.debug(
                     "AC device %s does not support %s",
                     device.name,
                     entity_description.key,
                 )
 
     if new_entities:
-        _LOGGER.info("Adding %d %s", len(new_entities), "selects")
+        _LOGGER.info("Adding %d select entities", len(new_entities))
         async_add_devices(new_entities)
 
 
